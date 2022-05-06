@@ -60,6 +60,7 @@ var (
 	year      = flag.String("y", fmt.Sprint(time.Now().Year()), "copyright year(s)")
 	verbose   = flag.Bool("v", false, "verbose mode: print the name of the files that are modified")
 	checkonly = flag.Bool("check", false, "check only mode: verify presence of license headers and exit with non-zero code if missing")
+	failhard  = flag.Bool("failhard", false, "fail hard on errors")
 )
 
 func init() {
@@ -172,6 +173,28 @@ func main() {
 					if !hasLicense {
 						fmt.Printf("%s\n", f.path)
 						return errors.New("missing license header")
+					}
+				} else if *failhard {
+					// Exit with non-zero code if any file is missing a license
+
+					// Check if file extension is known
+					lic, err := licenseHeader(f.path, t, data)
+					if err != nil {
+						log.Printf("%s: %v", f.path, err)
+						return err
+					}
+					if lic == nil { // Unknown fileExtension
+						return nil
+					}
+					// Check if file has a license
+					hasLicense, err := fileHasLicense(f.path)
+					if err != nil {
+						log.Printf("%s: %v", f.path, err)
+						return err
+					}
+					if !hasLicense {
+						fmt.Printf("%s\n", f.path)
+						log.Fatalf("%s: missing license header", f.path)
 					}
 				} else {
 					modified, err := addLicense(f.path, f.mode, t, data)
