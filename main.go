@@ -193,7 +193,6 @@ func main() {
 						return err
 					}
 					if !hasLicense {
-						fmt.Printf("%s\n", f.path)
 						log.Fatalf("%s: missing license header", f.path)
 					}
 				} else {
