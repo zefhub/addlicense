@@ -61,6 +61,7 @@ var (
 	verbose   = flag.Bool("v", false, "verbose mode: print the name of the files that are modified")
 	checkonly = flag.Bool("check", false, "check only mode: verify presence of license headers and exit with non-zero code if missing")
 	failhard  = flag.Bool("failhard", false, "fail hard on errors")
+	quiet     = flag.Bool("q", false, "quiet mode: don't print anything except errors")
 )
 
 func init() {
@@ -239,7 +240,9 @@ func walk(ch chan<- *file, start string) error {
 			return nil
 		}
 		if fileMatches(path, ignorePatterns) {
-			log.Printf("skipping: %s", path)
+			if !*quiet {
+				log.Printf("skipping: %s", path)
+			}
 			return nil
 		}
 		ch <- &file{path, fi.Mode()}
